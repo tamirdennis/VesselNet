@@ -364,6 +364,8 @@ def plot_roc_curves(gts_preds_list, hue_labels=None, roc_output_path=None,
     if hue_labels is None:
         hue_labels = [f"" for i in range(len(gts_preds_list))]
     for i, ((gts, preds), label) in enumerate(zip(gts_preds_list, hue_labels)):
+        gts = np.array(gts)
+        preds = np.array(preds)
         y_true = gts <= threshold
         y_score = - preds
         fpr, tpr, _ = metrics.roc_curve(y_true, y_score)

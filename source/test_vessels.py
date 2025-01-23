@@ -27,6 +27,7 @@ parser.add_argument('--stem_stride', type=int, default=2,
                     help='')
 parser.add_argument('--block_kernel', type=int, default=7,
                     help='')
+parser.add_argument('--bag_size', type=int, default=16, help='input batch size for training')
 parser.add_argument('--num_params_multiplier', type=int, default=8, )
 
 parser.add_argument('--dropout_p', type=float, default=0.0)
