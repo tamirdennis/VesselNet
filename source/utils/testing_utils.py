@@ -21,9 +21,6 @@ from datetime import datetime
 import random
 from sklearn.metrics import roc_auc_score
 
-random.seed(41)
-np.random.seed(42)
-
 
 def get_test_dataset(args, vessels_samples_per_patient, mean_gt_per_patient, test_patients, vessel_images_mean_std,
                      vessel_thickness_mean_std):

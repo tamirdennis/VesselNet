@@ -14,8 +14,6 @@ from pathlib import Path
 import json
 import networkx as nx
 
-random.seed(41)
-
 
 def train_vessels(args):
     Path(args.save_path).mkdir(exist_ok=True)
