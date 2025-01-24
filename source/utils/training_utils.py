@@ -3,7 +3,6 @@ import numpy as np
 import torch
 from pathlib import Path
 import json
-import networkx as nx
 
 from source.utils.datasets_utils import (
     filter_vessels_by_args, VesselsBagDataset,
@@ -207,37 +206,6 @@ def train_vessels(args):
         # Clean up
         del train_loader, val_dataset, val_sampler, vessels_model, criterion, optimizer, scheduler
         torch.cuda.empty_cache()
-
-
-def create_graph_from_pixels(pixel_locations):
-    """
-    Create an 8-neighborhood graph from a list of pixel (row, col) locations.
-
-    Args:
-        pixel_locations (list of tuples):
-            Each tuple is (row, col) representing a pixel location.
-
-    Returns:
-        networkx.Graph:
-            Graph where each node is a pixel location, and edges connect adjacent (8-connected) pixels.
-    """
-    G = nx.Graph()
-    pixel_set = set(pixel_locations)
-    G.add_nodes_from(pixel_locations)
-
-    adjacency_offsets = [
-        (-1, 0), (-1, 1), (0, 1), (1, 1),
-        (1, 0), (1, -1), (0, -1), (-1, -1)
-    ]
-
-    for location in pixel_locations:
-        row, col = location
-        for offset in adjacency_offsets:
-            neighbor = (row + offset[0], col + offset[1])
-            if neighbor in pixel_set:
-                G.add_edge(location, neighbor)
-
-    return G
 
 
 def get_and_save_vessel_norm_factors(train_patients,
