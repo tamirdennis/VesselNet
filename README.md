@@ -91,7 +91,10 @@ python3 ./source/test_vessels.py \
     --load_existing_data_split ./Models/HGB \
     --save_path ./VesselNet/Models/HGB \
     --bag_size 16 \
-    --gt_key HGB
+    --gt_key HGB \
+    --low_threshold 11 \
+    --females_threshold 12 \
+    --males_threshold 13.5
 ```
 
 #### Example: Test on RBC
@@ -110,7 +113,10 @@ python3 ./source/test_vessels.py \
     --load_existing_data_split ./Models/RBC \
     --save_path ./VesselNet/Models/RBC \
     --bag_size 16 \
-    --gt_key RBC
+    --gt_key RBC \
+    --low_threshold 3.8 \
+    --females_threshold 3.8 \
+    --males_threshold 4.4
 ```
 
 These commands generate regression plots, Bland-Altman plots, ROC curves, and metrics in the specified `--test_graphs_dir`. Results are saved in CSV and JSON formats for analysis.

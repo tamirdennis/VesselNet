@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append('/home/tamirdenis/projects/VesselsNet')
-
 import argparse
 from source.utils.testing_utils import test_vessels
 
