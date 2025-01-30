@@ -28,8 +28,7 @@ class VesselsMILConvNextABS(nn.Module):
         self.conv_next_encoder = create_custom_convnext(args, use_thickness=False)
         dim = self.conv_next_encoder.output_channels
         self.to_head_shape = (bag_size, dim)
-        if len(DEVICE_IDS) > 1:
-            self.conv_next_encoder = torch.nn.DataParallel(self.conv_next_encoder, device_ids=DEVICE_IDS)
+        self.conv_next_encoder = torch.nn.DataParallel(self.conv_next_encoder, device_ids=DEVICE_IDS)
 
         self.fc_dim = dim * bag_size
 
@@ -103,8 +102,7 @@ class VesselsWithThicknessMILConvNext(VesselsMILConvNextABS):
         """
         super().__init__(image_size, bag_size, in_channels, args)
         self.conv_next_encoder = create_custom_convnext(args, use_thickness=True)
-        if len(DEVICE_IDS) > 1:
-            self.conv_next_encoder = torch.nn.DataParallel(self.conv_next_encoder, device_ids=DEVICE_IDS)
+        self.conv_next_encoder = torch.nn.DataParallel(self.conv_next_encoder, device_ids=DEVICE_IDS)
 
     def forward(self, x, thickness):
         """

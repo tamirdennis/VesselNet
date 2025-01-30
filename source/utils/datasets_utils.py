@@ -169,7 +169,7 @@ class VesselsBagDataset(torch.utils.data.Dataset):
         ])
         if self.use_thickness:
             vessels_thickness_bag = np.array([curr_vessels[ind]['thickness'] for ind in vessels_bag_inds])
-            vessels_thickness_bag = torch.Tensor(vessels_thickness_bag)
+            vessels_thickness_bag = torch.Tensor(vessels_thickness_bag).cuda()
             if self.vessel_thickness_mean_std is not None:
                 vessels_thickness_bag = (
                     vessels_thickness_bag - self.vessel_thickness_mean_std[0]
@@ -200,18 +200,17 @@ class VesselsBagDataset(torch.utils.data.Dataset):
         return self.num_vessels
 
 
-def load_vessels_samples_from_json(save_path):
+def load_vessels_samples_from_json(json_path):
     """
     Loads vessels samples from JSON file in a given directory.
 
     Args:
-        save_path (str): Path to the directory containing 'samples_per_patients.json'.
+        json_path (str): Path to the directory containing 'samples_per_patients.json'.
 
     Returns:
             - vessels_samples_per_patient (dict): {patient_id: [vessel_samples]}
     """
-    samples_per_patients_path = Path(save_path) / 'samples_per_patients.json'
-    with open(samples_per_patients_path.as_posix(), 'r') as f:
+    with open(Path(json_path).as_posix(), 'r') as f:
         samples_per_patients_json = json.load(f)
     vessels_samples_per_patient = {}
     for p, vessels in samples_per_patients_json.items():

@@ -1,14 +1,21 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 import argparse
 from source.utils.training_utils import train_vessels
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--vessels_dataset_path', default="", type=str,
-                    help='Path to a directory or file containing raw vessels data. Used when load_existing_samples is None.')
+parser.add_argument('--full_vessels_dataset_path', default="", type=str,
+                    help='Path to a file containing full vessels data. Used when load_existing_samples is None.')
 
 parser.add_argument('--patients_info_xlsx_path', type=str, required=True,
                     help='Path to the XLSX file containing patient info with columns "ID", "Gender", '
                          '"Lab Hb [gr/dL]", and "Lab RBC [M/microL]" (or other relevant columns).')
+
+parser.add_argument('--output_filtered_samples_path', type=str, default=None,
+                    help='Path to a JSON file to dump filtered vessel samples json for later use.')
 
 parser.add_argument('--vessels_length', type=int, default=80,
                     help='Defines the minimum vessel length. Vessels are cut or padded to this length if needed.')
@@ -17,8 +24,8 @@ parser.add_argument('--use_thickness', action='store_true',
                     help='If set, uses vessel thickness as an additional feature in the model.')
 
 parser.add_argument('--load_existing_samples', type=str, default=None,
-                    help='Path to existing JSON file(s) with preprocessed vessel samples. If not provided, '
-                         'the code will load and filter from vessels_dataset_path.')
+                    help='Path to existing JSON file with filtered vessel samples. If not provided, '
+                         'the code will load and filter from full_vessels_dataset_path.')
 
 parser.add_argument('--train_val_test_split', nargs='+', type=float, default=[0.8, 0.1, 0.1],
                     help='Ratio split for training, validation, and test sets if no existing split is provided. '

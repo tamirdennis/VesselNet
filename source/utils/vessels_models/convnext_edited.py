@@ -312,12 +312,12 @@ def create_custom_convnext(args, use_thickness=False):
             stem_kernel=args.stem_kernel,
             stem_stride=args.stem_stride,
             block_kernel=args.block_kernel,
-        )
+        ).cuda()
     else:
         model = ConvNeXtVesselEncoder(
             custom_block_setting,
             stem_kernel=args.stem_kernel,
             stem_stride=args.stem_stride,
             block_kernel=args.block_kernel,
-        )
+        ).cuda()
     return model

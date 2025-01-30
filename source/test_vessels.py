@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+
 import argparse
 from source.utils.testing_utils import test_vessels
 
@@ -60,7 +65,7 @@ parser.add_argument('--save_path', type=str, default='./save_file/A_baseline',
                     help='Path to the folder where model checkpoints are saved (and/or loaded).')
 
 parser.add_argument('--load_existing_samples', type=str, default=None,
-                    help='Path to the folder containing existing JSONs with vessels samples.')
+                    help='Path to existing JSON file with filtered vessel samples.')
 
 parser.add_argument('--load_existing_data_split', type=str, default=None,
                     help='Path to the folder containing the train/val/test splits.'

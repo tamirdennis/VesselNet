@@ -32,7 +32,7 @@ def train_vessels(args):
 
     Args:
         args (Namespace): Command-line arguments with attributes such as:
-          - load_existing_samples, vessels_dataset_path
+          - load_existing_samples, full_vessels_dataset_path
           - patients_info_xlsx_path, gt_key
           - min_num_vessels, train_val_test_split, number_of_experiments
           - sampler_bins, load_existing_data_split
@@ -42,12 +42,14 @@ def train_vessels(args):
 
     # 1. Load or filter vessel samples:
     if args.load_existing_samples is not None:
+        # load existing filtered samples
+        print('Loading existing filtered vessels samples')
         vessels_samples_per_patient = load_vessels_samples_from_json(args.load_existing_samples)
     else:
-        vessels_samples_per_patient = load_vessels_samples_from_json(args.vessels_dataset_path)
+        vessels_samples_per_patient = load_vessels_samples_from_json(args.full_vessels_dataset_path)
         filter_vessels_by_args(vessels_samples_per_patient, args)
         print('Finished filtering vessels, now saving them for later use')
-        save_vessels_samples_as_json(args.save_path, vessels_samples_per_patient)
+        save_vessels_samples_as_json(args.output_filtered_samples_path, vessels_samples_per_patient)
 
     print('Finished loading vessels')
 
