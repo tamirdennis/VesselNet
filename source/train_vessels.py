@@ -67,7 +67,7 @@ parser.add_argument('--gt_key', type=str, default='HGB',
 parser.add_argument('--num_frames', type=int, default=160,
                     help='Number of frames (height) for the input vessel images if random_crop is not used.')
 
-parser.add_argument('--random_crop', type=int, nargs='+', default=None,
+parser.add_argument('--random_crop', type=int, nargs='+', default=(80, 80),
                     help='If provided, applies a random crop of this size to the input vessel images. '
                          'Expects two integers, e.g., --random_crop 80 80.')
 
@@ -86,13 +86,13 @@ parser.add_argument('--batch_size', type=int, default=8,
 parser.add_argument('--bag_size', type=int, default=16,
                     help='Number of vessel samples in one "bag" for MIL.')
 
-parser.add_argument('--weight_decay', type=float, default=1e-4,
+parser.add_argument('--weight_decay', type=float, default=0,
                     help='Weight decay parameter for the optimizer.')
 
-parser.add_argument('--epochs', type=int, default=150,
+parser.add_argument('--epochs', type=int, default=30,
                     help='Total number of training epochs.')
 
-parser.add_argument('--epoch_size', type=int, default=1600,
+parser.add_argument('--epoch_size', type=int, default=50,
                     help='Number of training iterations per epoch (effectively the number of batches).')
 
 parser.add_argument('--lr', type=float, default=1e-5,

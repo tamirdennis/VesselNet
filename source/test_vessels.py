@@ -48,7 +48,7 @@ parser.add_argument('--num_params_multiplier', type=int, default=8,
 parser.add_argument('--dropout_p', type=float, default=0.0,
                     help='Dropout probability used in the final MLP head.')
 
-parser.add_argument('--random_crop', type=int, nargs='+', default=None,
+parser.add_argument('--random_crop', type=int, nargs='+', default=(80, 80),
                     help='If provided, applies a random crop of this size to the input vessel images. '
                          'Expects two integers, e.g., --random_crop 80 80.')
 
@@ -61,7 +61,7 @@ parser.add_argument('--num_frames', type=int, default=160,
 parser.add_argument('--gt_key', type=str, default='HGB',
                     help='Key for the ground-truth value in the .xlsx file (e.g., "HGB").')
 
-parser.add_argument('--save_path', type=str, default='./save_file/A_baseline',
+parser.add_argument('--models_path', type=str, default='./save_file/A_baseline',
                     help='Path to the folder where model checkpoints are saved (and/or loaded).')
 
 parser.add_argument('--load_existing_samples', type=str, default=None,

@@ -106,7 +106,7 @@ def test_vessels(args):
 
     Steps:
       1. Loads patient gender info and sets up directories.
-      2. Finds all run folders in args.save_path to test.
+      2. Finds all run folders in args.models_path to test.
       3. Loads vessels samples, ground truths, and normalizing factors.
       4. Optionally loads an existing model checkpoint.
       5. For each split (train/val/test), collects predictions and organizes results.
@@ -127,11 +127,11 @@ def test_vessels(args):
     Returns:
         None. Results are saved to disk.
     """
-    Path(args.test_graphs_dir).mkdir(exist_ok=True)
+    Path(args.test_graphs_dir).mkdir(exist_ok=True, parents=True)
     patient_to_gender = get_id_to_gender_from_xlsx(args.patients_info_xlsx_path)
 
     # prepare dataset for testing:
-    runs_folders = [f for f in Path(args.save_path).iterdir() if f.is_dir()]
+    runs_folders = [f for f in Path(args.models_path).iterdir() if f.is_dir()]
     data_splits_folders = [Path(args.load_existing_data_split) / f.name for f in runs_folders]
 
     vessels_samples_per_patient = load_vessels_samples_from_json(args.load_existing_samples)
@@ -154,7 +154,7 @@ def test_vessels(args):
     for run_folder, data_split_folder in zip(runs_folders, data_splits_folders):
         print(f'run folder: {run_folder}')
         print(f'data split folder: {data_split_folder}')
-        save_path = (run_folder / 'model_best.pth').as_posix() if len(runs_folders) > 1 else args.save_path
+        save_path = (run_folder / 'model_best.pth').as_posix() if len(runs_folders) > 1 else args.models_path
         all_patients = list(vessels_samples_per_patient.keys())
         train_patients, val_patients, test_patients = load_vessels_data_split(data_split_folder.as_posix(),
                                                                               all_patients)

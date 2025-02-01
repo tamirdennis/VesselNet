@@ -396,13 +396,13 @@ def save_vessels_data_split(train_patients, val_patients, test_patients, save_pa
             f.write(f'{p}\n')
 
 
-def save_vessels_samples_as_json(save_path, vessels_samples_per_patient):
+def save_vessels_samples_as_json(vessels_output_path, vessels_samples_per_patient):
     """
     Saves the vessels_samples_per_patient dictionary to a JSON file.
 
     Args:
-        save_path (str):
-            Directory where the JSON file is stored.
+        vessels_output_path (str):
+            Path where the JSON file is stored.
         vessels_samples_per_patient (dict):
             {patient_id: [list of vessel samples]}, each sample is either a dict of
             {'vessel': <numpy array>, 'thickness': <float>} or a numpy array.
@@ -410,7 +410,6 @@ def save_vessels_samples_as_json(save_path, vessels_samples_per_patient):
     Returns:
         None. The JSON file 'samples_per_patients.json' is created or overwritten.
     """
-    samples_per_patients_path = Path(save_path) / 'samples_per_patients.json'
     samples_per_patients_json = {}
     for p, vessels in vessels_samples_per_patient.items():
         for_json_l = [
@@ -419,7 +418,7 @@ def save_vessels_samples_as_json(save_path, vessels_samples_per_patient):
         ]
         samples_per_patients_json[p] = for_json_l
 
-    with open(samples_per_patients_path.as_posix(), 'w') as f:
+    with open(Path(vessels_output_path).as_posix(), 'w') as f:
         json.dump(samples_per_patients_json, f)
 
 
