@@ -21,6 +21,8 @@ parser.add_argument('--males_threshold', type=float, default=13.5,
 parser.add_argument('--females_threshold', type=float, default=12.0,
                     help='Low threshold for female patients (e.g., HGB < 12.0  for mild anemia).')
 
+parser.add_argument('--model_type', type=str, default='convnext', help='Type of backbone: "convnext" or "vit".')
+
 parser.add_argument('--use_thickness', action='store_true',
                     help='If set, model uses vessel thickness as an additional input.')
 

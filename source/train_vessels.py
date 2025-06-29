@@ -20,6 +20,8 @@ parser.add_argument('--output_filtered_samples_path', type=str, default=None,
 parser.add_argument('--vessels_length', type=int, default=80,
                     help='Defines the minimum vessel length. Vessels are cut or padded to this length if needed.')
 
+parser.add_argument('--model_type', type=str, default='convnext', help='Type of backbone: "convnext" or "vit".')
+
 parser.add_argument('--use_thickness', action='store_true',
                     help='If set, uses vessel thickness as an additional feature in the model.')
 
