@@ -76,6 +76,10 @@ parser.add_argument('--load_existing_data_split', type=str, default=None,
 parser.add_argument('--bags_per_patient', type=int, default=70,
                     help='Number of "bags" (random sets of vessels) to sample per patient for evaluation.')
 
+parser.add_argument('--nhanes_folder_path', type=str, default=None,
+                    help='Path to NHANES data folder containing DEMO_L.xpt , CBC_L.xpt, DEMO_P.xpt, CBC_P.xpt files. '
+                         'if None, will not provide different population statistical analysis.')
+
 args = parser.parse_args()
 
 

@@ -12,6 +12,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
+from scipy import stats
 
 from source.utils.datasets_utils import load_vessels_samples_from_json, load_vessels_data_split, \
     load_relevant_gts, \
@@ -20,7 +21,6 @@ from source.utils.vessels_models.models import get_vessels_model
 from datetime import datetime
 import random
 from sklearn.metrics import roc_auc_score
-
 
 
 def get_test_dataset(args,
@@ -135,7 +135,8 @@ def test_vessels(args):
     data_splits_folders = [Path(args.load_existing_data_split) / f.name for f in runs_folders]
 
     vessels_samples_per_patient = load_vessels_samples_from_json(args.load_existing_samples)
-    gt_per_patient = load_relevant_gts(list(vessels_samples_per_patient.keys()), args.patients_info_xlsx_path, args.gt_key)
+    gt_per_patient = load_relevant_gts(list(vessels_samples_per_patient.keys()), args.patients_info_xlsx_path,
+                                       args.gt_key)
 
     all_gt = list(gt_per_patient.values())
     all_gt = np.array(all_gt)
@@ -229,6 +230,7 @@ def test_vessels(args):
         all_female_patients_gts += females_gts
         all_female_patients_preds += females_preds
 
+    plt.rcParams['figure.dpi'] = 300
     all_patients_list_df = []
     for split_name, patients_list in all_patients_results_dict.items():
         all_patients_list_df.extend(
@@ -245,7 +247,7 @@ def test_vessels(args):
     if all_patients_results_output_p.exists():
         current_date = datetime.now()
         all_patients_results_output_p = Path(args.test_graphs_dir) / \
-            f'all_patients_results_{current_date.strftime("%Y-%m-%d")}.csv'
+                                        f'all_patients_results_{current_date.strftime("%Y-%m-%d")}.csv'
     all_patients_df.to_csv(all_patients_results_output_p, index=False)
     plot = px.scatter(
         data_frame=all_patients_df,
@@ -337,8 +339,125 @@ def test_vessels(args):
         'female_auc_ci_low': female_auc_ci[0],
         'female_auc_ci_high': female_auc_ci[1],
     }
+
+    if args.nhanes_folder_path is not None:
+        test_predictions = np.array(all_patients_preds)
+        test_ground_truth = np.array(all_patients_gts)
+        test_males_gt = np.array(all_male_patients_gts)
+        test_females_gt = np.array(all_female_patients_gts)
+        df_L = load_nhanes_dataset((Path(args.nhanes_folder_path) / 'DEMO_L.xpt').as_posix(),
+                                   (Path(args.nhanes_folder_path) / 'CBC_L.xpt').as_posix(),
+                                   "2021-2023")
+        df_P = load_nhanes_dataset((Path(args.nhanes_folder_path) / 'DEMO_P.xpt').as_posix(),
+                                   (Path(args.nhanes_folder_path) / 'CBC_P.xpt').as_posix(),
+                                   "2017-2020")
+        combined_df = pd.concat([df_L, df_P], ignore_index=True)
+
+        black_males = subset_by_characteristics(combined_df, age_min=18, sex=1, race=4)
+        black_males_hgb = np.asarray(black_males["LBXHGB"].dropna())
+        white_males = subset_by_characteristics(combined_df, age_min=18, sex=1, race=3)
+        white_males_hgb = np.asarray(white_males["LBXHGB"].dropna())
+        fig, ax = plt.subplots(figsize=(7.1, 4.0))
+        plot_hb_hist(black_males_hgb, label="Non-Hispanic Black males")
+        plot_hb_hist(white_males_hgb, label="Non-Hispanic White males")
+        plot_hb_hist(test_males_gt, label="Our cohort - males", color='black')
+
+        ax.legend(frameon=False, fontsize=7.5, loc='upper left')
+        plt.ylim(0, 0.45)
+        plt.xlim(6, 19.5)
+        fig.tight_layout()
+        plt.show()
+
+        black_females = subset_by_characteristics(combined_df, age_min=18, sex=2, race=4)
+        black_females_hgb = np.asarray(black_females["LBXHGB"].dropna())
+        white_females = subset_by_characteristics(combined_df, age_min=18, sex=2, race=3)
+        white_females_hgb = np.asarray(white_females["LBXHGB"].dropna())
+        fig, ax = plt.subplots(figsize=(7.1, 4.0))
+        plot_hb_hist(black_females_hgb, label="Non-Hispanic Black females")
+        plot_hb_hist(white_females_hgb, label="Non-Hispanic White females")
+        plot_hb_hist(test_females_gt, label="Our cohort - females", color='black')
+        plt.ylim(0, 0.45)
+        plt.xlim(6, 19.5)
+
+        ax.legend(frameon=False, fontsize=7.5, loc='upper left')
+        fig.tight_layout()
+        plt.show()
+
+        black_females_weighted_auc, black_females_auc_ci_weighted = get_weighted_auc_and_CI(
+            test_ground_truth,
+            test_predictions,
+            black_females_hgb,
+            args.low_threshold)
+
+        black_males_weighted_auc, black_males_auc_ci_weighted = get_weighted_auc_and_CI(
+            test_ground_truth,
+            test_predictions,
+            black_males_hgb,
+            args.low_threshold)
+
+        white_females_weighted_auc, white_females_auc_ci_weighted = get_weighted_auc_and_CI(
+            test_ground_truth,
+            test_predictions,
+            white_females_hgb,
+            args.low_threshold)
+
+        white_males_weighted_auc, white_males_auc_ci_weighted = get_weighted_auc_and_CI(
+            test_ground_truth,
+            test_predictions,
+            white_males_hgb,
+            args.low_threshold)
+
+        all_metrics_dict.update({
+            'white_males_anemia_weighted_auc': white_males_weighted_auc,
+            'white_males_anemia_weighted_auc_ci': white_males_auc_ci_weighted,
+            'white_females_anemia_weighted_auc': white_females_weighted_auc,
+            'white_females_anemia_weighted_auc_ci': white_females_auc_ci_weighted,
+            'black_males_anemia_weighted_auc': black_males_weighted_auc,
+            'black_males_anemia_weighted_auc_ci': black_males_auc_ci_weighted,
+            'black_females_anemia_weighted_auc': black_females_weighted_auc,
+            'black_females_anemia_weighted_auc_ci': black_females_auc_ci_weighted,
+        })
+
+
     with open(Path(args.test_graphs_dir) / 'all_metrics.json', 'w') as json_file:
         json.dump(all_metrics_dict, json_file)
+
+
+
+def get_weighted_auc_and_CI(test_ground_truth, test_predictions, target_hgb_values, threshold):
+    weights = get_target_distribution_weights(test_ground_truth, target_hgb_values)
+    weighted_auc, auc_ci_weighted = get_auc_with_ci_weighted(test_ground_truth, test_predictions, threshold, weights)
+
+    return weighted_auc, auc_ci_weighted
+
+
+def get_auc_with_ci_weighted(test_ground_truth, test_predictions, threshold, weights):
+    weighted_auc = calc_auc(test_ground_truth, test_predictions,
+                            threshold=threshold,
+                            weights_list=weights)
+    auc_ci_weighted = metric_ci(test_ground_truth,
+                                test_predictions,
+                                calc_auc,
+                                threshold_strat=threshold,
+                                weights_list=weights,
+                                threshold=threshold)
+    return weighted_auc, auc_ci_weighted
+
+
+def get_target_distribution_weights(all_patients_gts, target_values):
+    test_ground_truth = np.array(all_patients_gts)
+    target_values = np.array(target_values)
+    # Use Kernel Density Estimation on your ground truth data
+    kde_source = stats.gaussian_kde(test_ground_truth)
+    p_source = kde_source.pdf
+    kde_source = stats.gaussian_kde(target_values)
+    p_target = kde_source.pdf
+    prob_target = p_target(test_ground_truth)
+    prob_source = p_source(test_ground_truth)
+    epsilon = 1e-9
+    weights = prob_target / (prob_source + epsilon)
+    weights_normalized = weights * (len(weights) / np.sum(weights))
+    return weights_normalized
 
 
 def spearmanr_value(gts, preds):
@@ -417,31 +536,36 @@ def metric_ci(gt_list,
               preds_list,
               metric_func,
               threshold_strat,
+              weights_list=None,
               n_boot=1000,
               ci=95,
               *args,
               **kwargs):
     """
-    Calculates the confidence interval for a custom metric using stratified bootstrapping.
+    Calculates the confidence interval for a custom metric using stratified bootstrapping,
+    now with support for sample weights.
 
     Args:
         gt_list (list or np.array): Ground truth values.
         preds_list (list or np.array): Prediction values.
-        metric_func (function): A function that computes the metric, signature like metric_func(gt, preds).
-        threshold_strat (float or None): If not None, used to split ground truth into binary classes for stratification.
-        n_boot (int, optional): Number of bootstrap samples. Defaults to 1000.
-        ci (int, optional): Confidence interval percentage (e.g., 95 for 95%). Defaults to 95.
+        metric_func (function): A function that computes the metric.
+                                **Must now accept a 'weights_list' kwarg.**
+        threshold_strat (float or None): If not None, used for stratification.
+        weights_list (list or np.array, optional): Sample weights for the full dataset.
+        n_boot (int, optional): Number of bootstrap samples.
+        ci (int, optional): Confidence interval percentage.
         *args: Additional positional arguments to pass to the metric function.
         **kwargs: Additional keyword arguments to pass to the metric function.
 
     Returns:
-        tuple:
-            (lower_CI, upper_CI) representing the lower and upper bounds of the computed metric.
+        tuple: (lower_CI, upper_CI)
     """
     gt_array = np.array(gt_list)
-    class_gt = gt_array if threshold_strat is None else gt_array <= threshold_strat
     preds_array = np.array(preds_list)
 
+    weights_array = np.array(weights_list) if weights_list is not None else None
+
+    class_gt = gt_array if threshold_strat is None else gt_array <= threshold_strat
     unique_classes = np.unique(class_gt)
     if len(unique_classes) != 2:
         raise ValueError("Stratified sampling requires binary ground truth labels.")
@@ -451,15 +575,25 @@ def metric_ci(gt_list,
 
     bootstrapped_metrics = []
     for _ in range(n_boot):
+        # Stratified resampling of indices
         sampled_pos_indices = np.random.choice(pos_indices, size=len(pos_indices), replace=True)
         sampled_neg_indices = np.random.choice(neg_indices, size=len(neg_indices), replace=True)
         sampled_indices = np.concatenate([sampled_pos_indices, sampled_neg_indices])
         np.random.shuffle(sampled_indices)
 
+        # Get the bootstrapped samples for gt and preds
         sample_gt = gt_array[sampled_indices]
         sample_preds = preds_array[sampled_indices]
 
-        boot_metric = metric_func(sample_gt, sample_preds, *args, **kwargs)
+        metric_kwargs = kwargs.copy()
+        if weights_array is not None:
+            # Get the weights corresponding to the resampled indices
+            sample_weights = weights_array[sampled_indices]
+            # Add/overwrite 'weights_list' in the kwargs to pass to metric_func
+            metric_kwargs['weights_list'] = sample_weights
+
+        # Call the metric function with bootstrapped data and (if-present) weights
+        boot_metric = metric_func(sample_gt, sample_preds, *args, **metric_kwargs)
         bootstrapped_metrics.append(boot_metric)
 
     lower = np.percentile(bootstrapped_metrics, (100 - ci) / 2)
@@ -468,19 +602,27 @@ def metric_ci(gt_list,
     return lower, upper
 
 
-def calc_auc(gt_list, preds_list, threshold=11):
+def calc_auc(gt_list, preds_list, threshold=11, weights_list=None):
     """
-    Calculates the AUC (Area Under the Curve) for ROC given ground truths and predictions.
+    Calculates the (optionally weighted) AUC (Area Under the Curve) for ROC.
 
     Args:
         gt_list (list or np.array): Ground truth values.
         preds_list (list or np.array): Prediction values.
-        threshold (float, optional): Threshold used to label ground truth as positive or negative.
+        threshold (float, optional): Threshold to label ground truth as positive or negative.
+        weights_list (list or np.array, optional): Sample weights.
+                                                   Defaults to None (unweighted).
 
     Returns:
         float: Calculated AUC value.
     """
-    fpr, tpr, _ = metrics.roc_curve(np.array(gt_list) <= threshold, -np.array(preds_list))
+    y_true = np.array(gt_list) <= threshold
+    y_score = -np.array(preds_list)
+
+    fpr, tpr, _ = metrics.roc_curve(y_true,
+                                    y_score,
+                                    sample_weight=weights_list)
+
     return metrics.auc(fpr, tpr)
 
 
@@ -660,14 +802,14 @@ def bland_altman_plot(gts, preds, file_path):
 
 
 def vessel_model_validation(val_dataset,
-                           val_sampler,
-                           vessels_model,
-                           criterion,
-                           args,
-                           best_metric,
-                           optimizer,
-                           epoch,
-                           save_best=True):
+                            val_sampler,
+                            vessels_model,
+                            criterion,
+                            args,
+                            best_metric,
+                            optimizer,
+                            epoch,
+                            save_best=True):
     """
     Validates the vessels model on a given validation dataset and sampler.
 
@@ -776,3 +918,109 @@ def load_vessels_norm_factors(save_path):
     vessel_images_mean_std = (vessel_images_mean_std['mean'], vessel_images_mean_std['std'])
     vessel_thickness_mean_std = (vessel_thickness_mean_std['mean'], vessel_thickness_mean_std['std'])
     return vessel_images_mean_std, vessel_thickness_mean_std
+
+
+def load_nhanes_dataset(demo_file, cbc_file, cycle_name):
+    """
+    Loads NHANES demographic and CBC data, merges them by SEQN,
+    standardizes column names, and returns a clean dataframe.
+    """
+    demo = pd.read_sas(demo_file, format="xport")
+    cbc = pd.read_sas(cbc_file, format="xport")
+
+    # Keep only essential columns
+    demo_cols = ["SEQN", "RIDAGEYR", "RIAGENDR", "RIDRETH1", "RIDRETH3"]
+    demo = demo[[c for c in demo_cols if c in demo.columns]]
+    cbc = cbc[["SEQN", "LBXHGB"]]  # Hemoglobin
+
+    demo["cycle"] = cycle_name
+    cbc["cycle"] = cycle_name
+
+    # Merge within cycle
+    df = pd.merge(demo, cbc, on=["SEQN", "cycle"], how="inner")
+    df = df.dropna(subset=["LBXHGB", "RIDAGEYR"])
+
+    # Standardize column names
+    df = df.rename(columns={
+        "RIDAGEYR": "age",
+        "RIAGENDR": "sex"
+    })
+
+    race_var = "RIDRETH3" if "RIDRETH3" in df.columns else "RIDRETH1"
+    df = df.rename(columns={race_var: "race"})
+
+    return df
+
+
+def subset_by_characteristics(
+        df,
+        *,
+        age_min=None,
+        age_max=None,
+        sex=None,  # 1 = male, 2 = female
+        race=None  # NHANES race codes: 1–5
+):
+    """
+    Returns a subset of the NHANES dataframe according to the given criteria.
+    No plotting here.
+    """
+    subset = df.copy()
+
+    if age_min is not None:
+        subset = subset[subset["age"] >= age_min]
+    if age_max is not None:
+        subset = subset[subset["age"] <= age_max]
+    if sex is not None:
+        subset = subset[subset["sex"] == sex]
+    if race is not None:
+        subset = subset[subset["race"] == race]
+
+    if len(subset) == 0:
+        print("Warning: No rows match these criteria.")
+    return subset
+
+
+def fd_bins(values):
+    """
+    Compute a bin count using the Freedman–Diaconis rule.
+    """
+    if values.size < 2:
+        return 10  # fallback
+
+    q25, q75 = np.percentile(values, [25, 75])
+    iqr = q75 - q25
+    if iqr == 0:
+        return 10  # fallback
+
+    n = values.size
+    bin_width = 2 * iqr * n ** (-1 / 3)
+    data_range = values.max() - values.min()
+    if bin_width <= 0 or data_range == 0:
+        return 10  # fallback
+
+    return int(np.ceil(data_range / bin_width))
+
+
+def plot_hb_hist(hb_values, label=None, bins=None, color=None):
+    """
+    Plots a histogram of hemoglobin values on the current axes.
+    - No title
+    - No plt.show()
+    - Adds a legend label
+    - Uses density=True for comparability between groups
+    """
+
+    if bins is None:
+        bins = fd_bins(hb_values)
+
+    plt.hist(
+        hb_values,
+        bins=bins,
+        density=True,
+        histtype="step",
+        linewidth=1.0,
+        label=label,
+        color=color,
+    )
+    plt.xlabel("Hemoglobin (g/dL)")
+    plt.ylabel("Density")
