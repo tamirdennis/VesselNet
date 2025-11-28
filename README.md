@@ -63,10 +63,28 @@ VesselNet/
 ├── Vessels_Dataset/                    # Data folder for raw/preprocessed samples
 │   ├── samples_per_patients.json       # Full vessels samples per patient dataset
 │   ├── samples_per_patients_thin.json  # Filtered thin vessels samples per patient dataset
+├── NHANES/ (optional)                  # Optional folder for population-level analyses
+│   ├── DEMO_L.xpt
+│   ├── CBC_L.xpt
+│   ├── DEMO_P.xpt
+│   ├── CBC_P.xpt
 ├── README.md                           # This readme
 ├── requirements.txt                    # Python dependencies
 └── Patients_Info.xlsx                  # Excel file with patient information.
 ```
+
+### NHANES Files (Optional)
+To enable population-level statistical analysis, download the following files from the official NHANES website:
+
+- DEMO_L.xpt  
+- CBC_L.xpt  
+- DEMO_P.xpt  
+- CBC_P.xpt  
+
+Download at: https://wwwn.cdc.gov/nchs/nhanes/
+
+Place all four files inside the `NHANES/` folder.  
+If `--nhanes_folder_path` is left as `None` (default), the analysis runs normally **without** population statistics.
 
 ---
 
@@ -94,8 +112,13 @@ python3 ./source/test_vessels.py \
     --gt_key HGB \
     --low_threshold 11 \
     --females_threshold 12 \
-    --males_threshold 13.5
+    --males_threshold 13.5 \
+    --nhanes_folder_path ./NHANES
 ```
+
+Note:  
+- The `--nhanes_folder_path` argument is **optional**.  
+- If you wish to test the model **without** NHANES statistical analysis, simply remove this argument (default = None).
 
 #### Example: Test on RBC
 Similarly, you can test the pretrained model on the RBC blood marker:
@@ -176,10 +199,9 @@ If you use this codebase in your research, please cite:
 
 ```
 @article{"",
-  title={Non-Invasive Blood Count Using Deep Learning: Hemoglobin and Red Blood Cell Estimation from Bulbar Conjunctiva Videos},
-  author={""
-  },
-  journal={Nature Biomedical Engineering (Under Review)},
+  title={Towards Non-Invasive Blood Count Using a Deep Learning Pipeline from Bulbar Conjunctiva Videos},
+  author={""},
+  journal={NPJ Digital Medicine (Under Review)},
   year={2025}
 }
 ```
