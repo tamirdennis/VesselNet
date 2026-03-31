@@ -1,9 +1,8 @@
-# Non-Invasive Blood Count Using Deep Learning:  
+# Towards non-invasive blood count using a deep learning pipeline from bulbar conjunctiva videos:  
 **Hemoglobin and Red Blood Cell Estimation from Bulbar Conjunctiva Videos**
 
 
-This repository contains the codebase for the paper "Non-Invasive Blood Count Using Deep Learning: 
-Hemoglobin and Red Blood Cell Estimation from Bulbar Conjunctiva Videos" (2025, Nature Biomedical Engineering).
+This repository contains the codebase for the paper "Towards non-invasive blood count using a deep learning pipeline from bulbar conjunctiva videos" (2026, NPJ Digital Medicine).
 The codebase includes the training and testing scripts for the VesselNet model,
 which estimates the hemoglobin and RBC blood markers from a prepared dataset of bulbar conjunctiva vessels made by our "Videos to Vessels" pipeline. 
 
@@ -182,12 +181,12 @@ To train multiple cross-validation folds, use **`train_vessels.py`**. Example co
 ## Figures & Results
 
 <p align="center">
-  <img src="figures/Figure_1.PNG" width="350" />
+  <img src="figures/Abstract.png" width="350" />
 </p>
 <p align="center">Abstract Figure.</p>
 
 <p align="center">
-  <img src="figures/Figure_2.PNG" width="350" />
+  <img src="figures/Regression Results.png" width="350" />
 </p>
 <p align="center">Main Results.</p>
 
@@ -201,8 +200,8 @@ If you use this codebase in your research, please cite:
 @article{"",
   title={Towards Non-Invasive Blood Count Using a Deep Learning Pipeline from Bulbar Conjunctiva Videos},
   author={""},
-  journal={NPJ Digital Medicine (Under Review)},
-  year={2025}
+  journal={NPJ Digital Medicine},
+  year={2026}
 }
 ```
 
