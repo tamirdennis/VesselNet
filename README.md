@@ -197,11 +197,15 @@ To train multiple cross-validation folds, use **`train_vessels.py`**. Example co
 If you use this codebase in your research, please cite:
 
 ```
-@article{"",
+@article{denis2026towards,
   title={Towards Non-Invasive Blood Count Using a Deep Learning Pipeline from Bulbar Conjunctiva Videos},
-  author={""},
-  journal={NPJ Digital Medicine},
-  year={2026}
+  author={Denis, Tamir and Sher, Ifat and Praisman, Emily and Haiadry, Marian and Zag, Amir and Benjamini, Ohad and Avigdor, Abraham and Asraf, Keren and Doolman, Ram and Wolf, Lior and Suchowski, Haim and Rotenstreich, Ygal},
+  journal={npj Digital Medicine},
+  year={2026},
+  volume={...},
+  number={...},
+  pages={...},
+  doi={...}
 }
 ```
 
