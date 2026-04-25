@@ -39,7 +39,7 @@ which estimates the hemoglobin and RBC blood markers from a prepared dataset of 
 ---
 
 ## Repository Structure
-We share our full Vessels dataset, patient information, and trained models in the following [DOI link](https://doi.org/10.6084/m9.figshare.28282781). 
+We share our full Vessels dataset, patient information, and trained models in the following [DOI link](https://doi.org/10.6084/m9.figshare.28280930). 
 To reproduce the results, download and place it in the repository's root directory.
 In order to run the given scripts, the repository should have the following structure:
 ```
